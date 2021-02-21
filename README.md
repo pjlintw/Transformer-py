@@ -18,7 +18,7 @@ conda env create -f environment.yaml
 conda activate fabian-pinjie
 ```
 
-If conda fails to create environment from `environment.yaml`. This may be caused by the platform-specific build constraints in the file. Try create one by installing the important packages mannually. The `environment.yaml` was built in macO.
+If conda fails to create environment from `environment.yaml`. This may be caused by the platform-specific build constraints in the file. Try create one by installing the important packages mannually. The `environment.yaml` was built in macOS.
 
 **Note**: Running `conda env export > environment.yaml` will include all the 
 dependencies conda automatically installed for you. Some dependecies may not work in different platforms.
