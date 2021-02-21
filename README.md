@@ -45,7 +45,9 @@ cat *.gold_conll >> sample.conll
 
 The file `sample.conll` contains irrelevant informations for training the neural nets.
 We only need the sequence of observation, POS tags and the word position for the positional embedding in transformer. Running `data_preprocess.py` to extract `word position`, `word` and `POS tag` and write it to
-`sample.tsv` in which `word position`, `word` and `POS tag` are separated by tab. The arguments `--dataset_name` and `output_dir` are the file to be passed to the program and the repository for the output file respectively. 
+`sample.tsv` in which `word position`, `word` and `POS tag` are separated by tab. 
+
+The arguments `--dataset_name` and `output_dir` are the file to be passed to the program and the repository for the output file respectively. 
 
 ```python
 python data_preprocess.py \
@@ -60,7 +62,9 @@ path `--output_dir`.
 ### Data information
 
 To get the information regarding the observations and POS taggings. Execute the script `data_information.py` to compute the
-maximum, minumum and mean of the sequence length, number of examples, POS tags and its percentage. The arguments `--dataset_name` and `output_dir` are the file to be passed to the program and the repository for the output file respectively. 
+maximum, minumum and mean of the sequence length, number of examples, POS tags and its percentage.
+
+The arguments `--dataset_name` and `output_dir` are the file to be passed to the program and the repository for the output file respectively. 
 
 ```python
 python data_information.py \
