@@ -33,7 +33,7 @@ conda env export > enviroment.yaml --from-history
 
 ### Dataset concatenation
 
-We use `chtb_0223.gold_conll`, `phoenix_0001.gold_conll`, `pri_0016.gold_conll` and `wsj 1681.gold conll` as our data for fine-tuning the pre-trained model.
+We use `chtb_0223.gold_conll`, `phoenix_0001.gold_conll`, `pri_0016.gold_conll` and `wsj_1681.gold_conll` as the data for fine-tuning the pre-trained model.
 These files are in the `data` folder. We combine them as one file `sample.conll` for preprocessing in next step.
 
 ```
