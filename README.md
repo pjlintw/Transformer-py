@@ -1,7 +1,6 @@
 # Transformer-py
 
-The repository works on fine-tuning Huggingface's Transformer-based models for POS tagging. To reproduce the results,
-follow the steps bellow.
+The repository works on fine-tuning of the pre-trained Transformer-based models for Parts-of-speech (POS) tagging. We leverage `chtb_0223.gold_conll`, `phoenix_0001.gold_conll`, `pri_0016.gold_conll` and `wsj_1681.gold_conll` annotated file as dataset for fine-tuning. You. To reproduce the results, follow the steps bellow.
 
 ## Installation
 

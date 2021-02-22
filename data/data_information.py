@@ -48,23 +48,21 @@ def main():
 
     # Create output file
     write_file = os.path.join(args.output_dir, 'sample.info')
-    wf = open(write_file, 'w')
 
-    # Write max, min, mean sentence length and number of sent
-    wf.write(f'Max sequence length: {max_len}\n')
-    wf.write(f'Min sequence length: {min_len}\n')
-    wf.write(f'Mean sequence length: {mean_len}\n')
-    wf.write(f'Number of sequence: {num_sentences}\n\n')
-    wf.write('Tags:\n')
+    with open(write_file, 'w') as wf:
+        # Write max, min, mean sentence length and number of sent
+        wf.write(f'Max sequence length: {max_len}\n')
+        wf.write(f'Min sequence length: {min_len}\n')
+        wf.write(f'Mean sequence length: {mean_len}\n')
+        wf.write(f'Number of sequence: {num_sentences}\n\n')
+        wf.write('Tags:\n')
 
-    # Write POS tag and its percentage of the words
-    tag_percentage = [ (k, '%.2f'%(v/num_tags)) for k,v in tag2freq.items() ]
-    tag_percentage = sorted(tag_percentage, key=lambda x: x[0])
-    # Sort by tag name
-    for ele in sorted(tag_percentage, key=lambda x: x[0]):
-        tag, perc = ele
-        wf.write(f'{tag : <5}\t{perc}%\n')    
-    wf.close()
+        # Write POS tag and its percentage of the words
+        tag_percentage = [ (k, '%.2f'%(v/num_tags*100)) for k,v in tag2freq.items() ]
+        tag_percentage = sorted(tag_percentage, key=lambda x: x[0])
+        # Sort by tag name
+        for (tag, perc)  in sorted(tag_percentage, key=lambda x: x[0]):
+            wf.write(f'{tag : <5}\t{perc}%\n')    
 
 if __name__ == '__main__':
     main()
