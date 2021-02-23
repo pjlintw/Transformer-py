@@ -1,6 +1,6 @@
 # Transformer-py
 
-The repository works on fine-tuning of the pre-trained Transformer-based models for Parts-of-speech (POS) tagging. We leverage `chtb_0223.gold_conll`, `phoenix_0001.gold_conll`, `pri_0016.gold_conll` and `wsj_1681.gold_conll` annotated file as dataset for fine-tuning. You. To reproduce the results, follow the steps bellow.
+The repository works on fine-tuning of the pre-trained Transformer-based models for Parts-of-speech (POS) tagging. We leverage `chtb_0223.gold_conll`, `phoenix_0001.gold_conll`, `pri_0016.gold_conll` and `wsj_1681.gold_conll` annotated file as dataset for fine-tuning. To reproduce the results, follow the steps bellow.
 
 * New Februray 22th, 2021: Data preprocessing and data information.
 
@@ -19,7 +19,7 @@ conda env create -f environment.yaml
 conda activate fabian-pinjie
 ```
 
-If conda fails to create environment from `environment.yaml`. This may be caused by the platform-specific build constraints in the file. Try create one by installing the important packages mannually. The `environment.yaml` was built in macOS.
+If conda fails to create environment from `environment.yaml`. This may be caused by the platform-specific build constraints in the file. Try create one by installing the important packages manually. The `environment.yaml` was built in macOS.
 
 **Note**: Running `conda env export > environment.yaml` will include all the 
 dependencies conda automatically installed for you. Some dependecies may not work in different platforms.
