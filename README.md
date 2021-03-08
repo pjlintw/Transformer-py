@@ -3,6 +3,8 @@
 The repository works on fine-tuning of the pre-trained Transformer-based models for Parts-of-speech (POS) tagging. We leverage `chtb_0223.gold_conll`, `phoenix_0001.gold_conll`, `pri_0016.gold_conll` and `wsj_1681.gold_conll` annotated file as dataset for fine-tuning. To reproduce the results, follow the steps bellow.
 
 * New Februray 22th, 2021: Data preprocessing and data information.
+* New March 8th, 2021: Train the BERT and custom model, dataset loading script.
+    
 
 ## Installation
 
@@ -74,3 +76,46 @@ python data_information.py \
 ```
 
 or run `source ./run_information.sh` in the command line. The output file `sample.info` will be exported in the  `--output_dir` directory.
+
+## Run the model
+
+We freeze the BERT model and only train the classify layer. 
+
+
+### Train the model on top of BERT 
+
+```python
+python run_pos.py \
+ --model_name_or_path bert-base-cased \
+ --output_dir /tmp/pos-exp-1 \
+ --task_name pos \
+ --dataset_script ontonotes_v4.py \
+ --max_seq_length 256 \
+ --per_device_train_batch_size 16 \
+ --per_device_eval_batch_size 8 \
+ --num_train_epochs 3 \
+ --do_train \
+ --do_eval \
+ --do_predict
+```
+
+### Train the custom model
+
+Run the costom model via the path `models/custom-model-demo.py`.
+You can define your custom model by modifing the demo script.
+
+```python
+python run_pos.py \
+ --model_name_or_path models/custom-model-demo.py \
+ --output_dir /tmp/pos-exp-1 \
+ --task_name pos \
+ --dataset_script ontonotes_v4.py \
+ --max_seq_length 256 \
+ --per_device_train_batch_size 16 \
+ --per_device_eval_batch_size 8 \
+ --num_train_epochs 3 \
+ --do_train \
+ --do_eval \
+ --do_predict
+```
+

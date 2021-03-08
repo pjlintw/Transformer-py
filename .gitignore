@@ -4,3 +4,4 @@ venv/
 __pycache__
 *.conll
 *.tsv
+ontonetes-4.0
