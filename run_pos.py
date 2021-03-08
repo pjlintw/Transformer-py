@@ -68,29 +68,6 @@ class DataTrainingArguments:
         metadata={"help": "Whether to return the tag levels during evaluation."}
         )
 
-@dataclass
-class DataTrainingArguments:
-    """Arguments to data involved."""
-    task_name: Optional[str] = field(
-        default="pos", 
-        metadata={"help": "The name of the task (ner, pos...)."}
-        )
-
-    dataset_script: Optional[str] = field(
-        default="ontonotes_v4.py", 
-        metadata={"help": "Dataset loading script."}
-        )
-
-    max_seq_length: Optional[int] = field(
-        default=512,
-        metadata={"help": "maximal length to be padded."}
-        )
-    
-    return_tag_level_metrics: bool = field(
-        default=False,
-        metadata={"help": "Whether to return the tag levels during evaluation."}
-        )
-
 
 def get_label_list(labels):
     """"Get label list from the `pos_tags`.
