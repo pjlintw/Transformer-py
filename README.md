@@ -1,10 +1,19 @@
-# Transformer-py
+# Transformer-py: a Flexible Framework for POS tagging.
+
+[**Data**](#dataset-and-preprocessing) | [**Training**](#run-the-model)
+
+
 
 The repository works on fine-tuning of the pre-trained Transformer-based models for Parts-of-speech (POS) tagging. We leverage `chtb_0223.gold_conll`, `phoenix_0001.gold_conll`, `pri_0016.gold_conll` and `wsj_1681.gold_conll` annotated file as dataset for fine-tuning. To reproduce the results, follow the steps bellow.
 
 * New Februray 22th, 2021: Data preprocessing and data information.
 * New March 8th, 2021: Train the BERT and custom model, dataset loading script.
     
+
+## TO-DO
+* Experiements of Linear Probing.
+* Experiements of data efficiency.
+
 
 ## Installation
 
@@ -77,9 +86,34 @@ python data_information.py \
 
 or run `source ./run_information.sh` in the command line. The output file `sample.info` will be exported in the  `--output_dir` directory.
 
+## Save the Results
+
+We sugguest that using `Weights & Biass` to save the configuration, loss and evaluation metrics for you.
+To connect your own `Weights & Biass` account. Just installing the packages using `pip install wandb`
+and login it. The `trainer` in `run_pos.py` will automaticaaly log the `TrainingArguments`, losses and evalaution
+metircs and model information to your account. 
+
+```
+wandb login
+```
+
+You can specify which project folder for saving files. For exmaple, set project name 
+to the environment variable.
+
+```
+export WANDB_PROJECT=TEST_PROJECT
+export WANDB_WATCH=all
+```
+
 ## Run the model
 
-We freeze the BERT model and only train the classify layer. 
+We evaluate the BERT on linear probing test to see which layer capture more linsutic structure 
+information in therir contextual representaitons. The output layers for classifing the POS tags are added on the different layers of BERT. We only train these layer's weights.
+
+We treats BERT as a feature extractor to provide fixed pre-trained contextual embeddings.
+In the script, we set `requires_grad` false for BERT model. If you would like to fine-tune the whole the model, just comment those lines.
+
+In certain cases, rather than fine-tuning the entire pre-trained model end-to-end, it can be beneficial to obtained pre-trained contextual embeddings, which are fixed contextual representations of each input token generated from the hidden layers of the pre-trained model. This should also mitigate most of the out-of-memory issues.
 
 
 ### Train the model on top of BERT 
@@ -119,3 +153,27 @@ python run_pos.py \
  --do_predict
 ```
 
+### Quicker training  
+
+If you'd like to furthe develop the model or dedugging it. 
+Th options `max_train_samples`, `max_vall_samples` and `max_test_samples` allow you to truncate the number of examples.
+They recieve digits digit format.
+
+```
+python run_pos.py \
+ --model_name_or_path models/custom-model-demo.py \
+ --output_dir /tmp/pos-exp-1 \
+ --task_name pos \
+ --dataset_script ontonotes_v4.py \
+ --max_seq_length 256 \
+ --per_device_train_batch_size 24 \
+ --per_device_eval_batch_size 8 \
+ --num_train_epochs 3 \
+ --do_train \
+ --do_eval \
+ --do_predict \
+ --max_train_samples 10000 \
+ --max_val_samples 1000 \
+ --max_test_samples 1000 \
+ --logging_steps 20 
+```
