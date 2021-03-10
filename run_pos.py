@@ -1,12 +1,15 @@
 """Run the pretrained BERT or custom model on POS taggins task."""
 import logging
+import os
 import sys
 import inspect
 import importlib.util
 
+import numpy as np
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Tuple, Union
 from datasets import ClassLabel, load_dataset, load_metric
+import transformers
 from transformers import (
     BertModel,
     AutoConfig,
@@ -17,8 +20,12 @@ from transformers import (
     BertTokenizerFast, 
     HfArgumentParser,
     TrainingArguments,
-    Trainer
+    Trainer,
+    set_seed
 )
+from transformers.trainer_utils import get_last_checkpoint, is_main_process
+
+
 
 # Setup logging
 logger = logging.getLogger(__name__)
@@ -45,6 +52,7 @@ class ModelArguments:
         metadata={"help": "Pretrained tokenizer name or path."}
     )
 
+
 @dataclass
 class DataTrainingArguments:
     """Arguments to data involved."""
@@ -68,6 +76,26 @@ class DataTrainingArguments:
         metadata={"help": "Whether to return the tag levels during evaluation."}
         )
 
+    max_train_samples: Optional[int] = field(
+        default=None,
+        metadata={"help": "Truncate the number of training examples to this value if set."}
+        )
+
+    max_val_samples: Optional[int] = field(
+        default=None,
+        metadata={"help": "Truncate the number of validation examples to this value if set."}
+        )
+
+    max_test_samples: Optional[int] = field(
+        default=None,
+        metadata={"help": "Truncate the number of test examples to this value if set."}
+        )
+
+"""
+export WANDB_PROJECT=all
+export WANDB_PROJECT="PROJECT_NAME"
+"""
+
 
 def get_label_list(labels):
     """"Get label list from the `pos_tags`.
@@ -86,39 +114,6 @@ def get_label_list(labels):
     return label_list
 
 
-def compute_metrics(p):
-    """Compute the evaluation metric for POS tagging."""
-    predictions, labels = p
-    predictions = np.argmax(predictions, axis=2)
-
-    # Remove ignored index (special tokens)
-    true_predictions = [
-        [label_list[p] for (p, l) in zip(prediction, label) if l != -100]
-        for prediction, label in zip(predictions, labels)
-    ]
-    true_labels = [
-        [label_list[l] for (p, l) in zip(prediction, label) if l != -100]
-        for prediction, label in zip(predictions, labels)
-    ]
-
-    results = metric.compute(predictions=true_predictions, references=true_labels)
-    if data_args.return_tag_level_metrics:
-        # Unpack nested dictionaries
-        final_results = {}
-        for key, value in results.items():
-            if isinstance(value, dict):
-                for n, v in value.items():
-                    final_results[f"{key}_{n}"] = v
-            else:
-                final_results[key] = value
-        return final_results
-    else:
-        return {
-            "precision": results["overall_precision"],
-            "recall": results["overall_recall"],
-            "f1": results["overall_f1"],
-            "accuracy": results["overall_accuracy"],
-        }
 
 
 def main():
@@ -126,6 +121,9 @@ def main():
     parser = HfArgumentParser((ModelArguments, DataTrainingArguments, TrainingArguments))
     model_args, data_args, training_args = parser.parse_args_into_dataclasses()
     
+    # Set seed before initializing
+    set_seed(training_args.seed)
+
     ########## Load dataset from script. ##########
     # 'ontonotes_v4.py'
     datasets = load_dataset(data_args.dataset_script)
@@ -148,7 +146,7 @@ def main():
         label_list = get_label_list(datasets["train"]["pos_tags"])
         label_to_id = {l: i for i, l in enumerate(label_list)}
     num_labels = len(label_list)
-    
+
 
     ########## Load pre-trained or custom model, tokenizer and config ##########
     # BertConfig
@@ -191,9 +189,6 @@ def main():
         for param in model.base_model.parameters():
             param.requires_grad = False
 
-
-    # Metrics
-    metric = load_metric("seqeval")
 
     def tokenize_fn(examples):
         """Tokenize the input sequence and align the label.
@@ -267,23 +262,99 @@ def main():
         tokenized_inputs["labels"] = labels
         return tokenized_inputs
 
-    tokenized_dataset = datasets.map(
+
+
+    ### Truncate  number of examples ###
+    if training_args.do_train:
+        if "train" not in datasets:
+            raise ValueError("--do_train requires a train dataset")
+        train_dataset = datasets["train"]
+        if data_args.max_train_samples is not None:
+            train_dataset = train_dataset.select(range(data_args.max_train_samples))
+        train_dataset = train_dataset.map(
             tokenize_fn,
-            batched=True)
+            batched=True,
+        )
+
+    if training_args.do_eval:
+        if "validation" not in datasets:
+            raise ValueError("--do_eval requires a validation dataset")
+        eval_dataset = datasets["validation"]
+        if data_args.max_val_samples is not None:
+            eval_dataset = eval_dataset.select(range(data_args.max_val_samples))
+        eval_dataset = eval_dataset.map(
+            tokenize_fn,
+            batched=True,
+        )
+
+    if training_args.do_predict:
+        if "test" not in datasets:
+            raise ValueError("--do_predict requires a test dataset")
+        test_dataset = datasets["test"]
+        if data_args.max_test_samples is not None:
+            test_dataset = test_dataset.select(range(data_args.max_test_samples))
+        test_dataset = test_dataset.map(
+            tokenize_fn,
+            batched=True,
+        )
+
 
     data_collator = DataCollatorForTokenClassification(tokenizer, pad_to_multiple_of=8)
+
+    # Metrics
+    metric = load_metric("seqeval")
+
+
+    # Define metrics
+    def compute_metrics(p):
+        """Compute the evaluation metric for POS tagging."""
+        predictions, labels = p
+        predictions = np.argmax(predictions, axis=2)
+
+        # Remove ignored index (special tokens)
+        true_predictions = [
+            [label_list[p] for (p, l) in zip(prediction, label) if l != -100]
+            for prediction, label in zip(predictions, labels)
+        ]
+        true_labels = [
+            [label_list[l] for (p, l) in zip(prediction, label) if l != -100]
+            for prediction, label in zip(predictions, labels)
+        ]
+
+        results = metric.compute(predictions=true_predictions, references=true_labels)
+        if data_args.return_tag_level_metrics:
+            # Unpack nested dictionaries
+            final_results = {}
+            for key, value in results.items():
+                if isinstance(value, dict):
+                    for n, v in value.items():
+                        final_results[f"{key}_{n}"] = v
+                else:
+                    final_results[key] = value
+            return final_results
+        else:
+            return {
+                "precision": results["overall_precision"],
+                "recall": results["overall_recall"],
+                "f1": results["overall_f1"],
+                "accuracy": results["overall_accuracy"],
+            }
 
 
     ########## Train, evaluate and test with Trainer ##########
     # Initialize our Trainer
     trainer = Trainer(
         model=model,
-        train_dataset=tokenized_dataset["test"] if True else None,
-        eval_dataset=tokenized_dataset["validation"] if True else None,
+        args=training_args,
+        train_dataset=train_dataset if training_args.do_train else None,
+        eval_dataset=eval_dataset if training_args.do_eval else None,
         tokenizer=tokenizer,
         data_collator=data_collator,
         compute_metrics=compute_metrics,
     )
+
+    
+
 
     # Training
     last_checkpoint=None
@@ -296,9 +367,17 @@ def main():
         metrics = train_result.metrics
         trainer.save_model()  # Saves the tokenizer too for easy upload
 
-        trainer.log_metrics("train", metrics)
-        trainer.save_metrics("train", metrics)
-        trainer.save_state()
+        max_train_samples = (
+            data_args.max_train_samples if data_args.max_train_samples is not None else len(train_dataset)
+        )
+        metrics["train_samples"] = min(max_train_samples, len(train_dataset))
+
+        print(metrics)
+
+        # trainer.log_metrics("train", metrics)
+        # trainer.save_metrics("train", metrics)
+        # trainer.save_state()
+
 
     # Evaluation
     results = {}
@@ -307,14 +386,18 @@ def main():
 
         results = trainer.evaluate()
 
-        trainer.log_metrics("eval", results)
-        trainer.save_metrics("eval", results)
+        max_val_samples = data_args.max_val_samples if data_args.max_val_samples is not None else len(eval_dataset)
+        metrics["eval_samples"] = min(max_val_samples, len(eval_dataset))
+
+        print(results)
+        #trainer.log_metrics("eval", metrics)
+        #trainer.save_metrics("eval", metrics)
+
 
     # Predict
     if training_args.do_predict:
         logger.info("*** Predict ***")
 
-        test_dataset = tokenized_datasets["test"]
         predictions, labels, metrics = trainer.predict(test_dataset)
         predictions = np.argmax(predictions, axis=2)
 
@@ -324,15 +407,15 @@ def main():
             for prediction, label in zip(predictions, labels)
         ]
 
-        trainer.log_metrics("test", metrics)
-        trainer.save_metrics("test", metrics)
+        #trainer.log_metrics("test", metrics)
+        #trainer.save_metrics("test", metrics)
 
         # Save predictions
         output_test_predictions_file = os.path.join(training_args.output_dir, "test_predictions.txt")
-        if trainer.is_world_process_zero():
-            with open(output_test_predictions_file, "w") as writer:
-                for prediction in true_predictions:
-                    writer.write(" ".join(prediction) + "\n")
+        #if trainer.is_world_process_zero():
+        with open(output_test_predictions_file, "w") as writer:
+            for prediction in true_predictions:
+                writer.write(" ".join(prediction) + "\n")
 
     return results
 

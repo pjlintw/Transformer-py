@@ -91,7 +91,8 @@ class Ontonotes4(datasets.GeneratorBasedBuilder):
 
     def _split_generators(self, dl_manager):
         ### TO-DO ###
-        train_file = "./ontonetes-4.0/test-sample.tsv"
+        train_file = "./ontonotes-4.0/sample.tsv"
+        
         return [
             datasets.SplitGenerator(name=datasets.Split.TRAIN, gen_kwargs={"filepath": train_file}),
             datasets.SplitGenerator(name=datasets.Split.VALIDATION, gen_kwargs={"filepath": train_file}),
