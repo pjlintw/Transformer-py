@@ -4,6 +4,7 @@ import os
 import argparse
 from collections import defaultdict
 import math
+import numpy as np
 
 def get_args():
     """Parse arguments."""
@@ -41,6 +42,13 @@ def main():
             num_tags += 1
             cur_sentence_length = int(w_position)
 
+    # Sort 
+    sent_length_arr = np.sort(sent_length_lst)
+
+    percentile_list = [50,75,80,90,95,96,97,98,99,100]
+    for perc in percentile_list:
+        print(f"{perc}% percentile {np.percentile(sent_length_arr, perc)}")
+        
     # Maximum, min and mean sequence length
     max_len = max(sent_length_lst)
     min_len = min(sent_length_lst)
@@ -50,6 +58,11 @@ def main():
     write_file = os.path.join(args.output_dir, 'sample.info')
 
     with open(write_file, 'w') as wf:
+        # Percentile
+        for perc in percentile_list:
+            wf.write("{}% percentile {}\n".format(perc,
+                                                  np.percentile(sent_length_arr, perc)))
+        wf.write("\n")
         # Write max, min, mean sentence length and number of sent
         wf.write(f'Max sequence length: {max_len}\n')
         wf.write(f'Min sequence length: {min_len}\n')

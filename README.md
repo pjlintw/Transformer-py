@@ -38,7 +38,7 @@ We suggest you to use `--from-history` flag to export the packages to the enviro
 Make sure `conda` only exports the packages that you've explicitly asked for.
 
 ```
-conda env export > enviroment.yaml --from-history
+conda env export > environment.yaml --from-history
 ```
 
 ## Dataset and Preprocessing

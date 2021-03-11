@@ -2,8 +2,12 @@
 import logging
 import os
 import sys
+import math
 import inspect
 import importlib.util
+
+from sklearn.metrics import accuracy_score, classification_report, precision_recall_fscore_support
+from pathlib import Path
 
 import numpy as np
 from dataclasses import dataclass, field
@@ -21,7 +25,7 @@ from transformers import (
     HfArgumentParser,
     TrainingArguments,
     Trainer,
-    set_seed
+    set_seed,
 )
 from transformers.trainer_utils import get_last_checkpoint, is_main_process
 
@@ -52,6 +56,11 @@ class ModelArguments:
         metadata={"help": "Pretrained tokenizer name or path."}
     )
 
+    to_layer: Optional[int] = field(
+        default=None,
+        metadata={"help": "On which BERT's layer the classifier bases on."}
+    )
+
 
 @dataclass
 class DataTrainingArguments:
@@ -72,7 +81,7 @@ class DataTrainingArguments:
         )
     
     return_tag_level_metrics: bool = field(
-        default=False,
+        default=True,
         metadata={"help": "Whether to return the tag levels during evaluation."}
         )
 
@@ -114,8 +123,6 @@ def get_label_list(labels):
     return label_list
 
 
-
-
 def main():
     # Parser
     parser = HfArgumentParser((ModelArguments, DataTrainingArguments, TrainingArguments))
@@ -123,6 +130,7 @@ def main():
     
     # Set seed before initializing
     set_seed(training_args.seed)
+
 
     ########## Load dataset from script. ##########
     # 'ontonotes_v4.py'
@@ -149,6 +157,8 @@ def main():
 
 
     ########## Load pre-trained or custom model, tokenizer and config ##########
+    
+
     # BertConfig
     config = AutoConfig.from_pretrained(
         model_args.config_name,
@@ -157,6 +167,7 @@ def main():
         cache_dir=None,
         revision="main",
         use_auth_token=True if False else None,
+        output_hidden_states=True
     )
 
     # BERTTokenizer
@@ -173,6 +184,11 @@ def main():
         spec = importlib.util.spec_from_file_location("module.name",  model_args.model_name_or_path)
         module_name = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module_name)
+
+        # Add `to_layer` for `LinearProbingBERT`
+        if model_args.to_layer is not None:
+            config.to_layer = model_args.to_layer
+
         # Creating custom model
         model = module_name.model()(config)
         print(f"Creating custom model in {model_args.model_name_or_path}")
@@ -185,11 +201,11 @@ def main():
             revision="main",
             use_auth_token=True if False else None,
         )
-        # Freeze BERT
+        # Freeze BERT. Train the `classifier` weights 
         for param in model.base_model.parameters():
             param.requires_grad = False
-
-
+        
+    
     def tokenize_fn(examples):
         """Tokenize the input sequence and align the label.
 
@@ -307,8 +323,15 @@ def main():
 
     # Define metrics
     def compute_metrics(p):
-        """Compute the evaluation metric for POS tagging."""
+        """Compute the evaluation metric for POS tagging. 
+
+        This function Will be called if set `logging_steps` number of 
+        steps to log metrics or set `eval_steps`.
+        """
+        # transformers.trainer_utils.EvalPrediction
         predictions, labels = p
+
+        #  Shape of predictions (batch, seq_max_len, num_labels)
         predictions = np.argmax(predictions, axis=2)
 
         # Remove ignored index (special tokens)
@@ -321,8 +344,42 @@ def main():
             for prediction, label in zip(predictions, labels)
         ]
 
-        results = metric.compute(predictions=true_predictions, references=true_labels)
+        true_preds = list()
+        true_label = list()
+        for l in true_labels:
+            for ele in l:
+                true_label.append(ele)
+        for l in true_predictions:
+            for ele in l:
+                true_preds.append(ele)
+
+        
+        ### DON't USE ###
+        data_args.return_tag_level_metrics = False
         if data_args.return_tag_level_metrics:
+            result = classification_report(true_label,
+                                           true_preds,
+                                           output_dict=False,
+                                           labels=np.unique(true_preds))
+        else:
+            precision, recall, f1, _ = precision_recall_fscore_support(true_label,   
+                                                                       true_preds,
+                                                                       average='macro',
+                                                                       zero_division=0)
+            acc = accuracy_score(true_label, true_preds)             
+
+            result =  {
+                       'precision': precision,
+                       'recall': recall,
+                       'f1': f1,
+                       'accuracy': acc,
+            }
+        return result
+
+        ########## Origin ##########
+        #results = metric.compute(predictions=true_predictions, references=true_labels)
+        if data_args.return_tag_level_metrics:
+        
             # Unpack nested dictionaries
             final_results = {}
             for key, value in results.items():
@@ -339,7 +396,7 @@ def main():
                 "f1": results["overall_f1"],
                 "accuracy": results["overall_accuracy"],
             }
-
+        ########## Origin ##########
 
     ########## Train, evaluate and test with Trainer ##########
     # Initialize our Trainer
@@ -352,9 +409,6 @@ def main():
         data_collator=data_collator,
         compute_metrics=compute_metrics,
     )
-
-    
-
 
     # Training
     last_checkpoint=None
@@ -372,12 +426,6 @@ def main():
         )
         metrics["train_samples"] = min(max_train_samples, len(train_dataset))
 
-        print(metrics)
-
-        # trainer.log_metrics("train", metrics)
-        # trainer.save_metrics("train", metrics)
-        # trainer.save_state()
-
 
     # Evaluation
     results = {}
@@ -388,10 +436,6 @@ def main():
 
         max_val_samples = data_args.max_val_samples if data_args.max_val_samples is not None else len(eval_dataset)
         metrics["eval_samples"] = min(max_val_samples, len(eval_dataset))
-
-        print(results)
-        #trainer.log_metrics("eval", metrics)
-        #trainer.save_metrics("eval", metrics)
 
 
     # Predict
@@ -407,13 +451,8 @@ def main():
             for prediction, label in zip(predictions, labels)
         ]
 
-        #trainer.log_metrics("test", metrics)
-        #trainer.save_metrics("test", metrics)
-
         # Save predictions
-        output_test_predictions_file = os.path.join(training_args.output_dir, "test_predictions.txt")
-        #if trainer.is_world_process_zero():
-        with open(output_test_predictions_file, "w") as writer:
+        with open("test_predictions.txt", "w") as writer:
             for prediction in true_predictions:
                 writer.write(" ".join(prediction) + "\n")
 

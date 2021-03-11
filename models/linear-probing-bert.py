@@ -1,4 +1,4 @@
-"""Define custom model based on BERT."""
+"""Linear probing based on BERT."""
 import torch
 import torch.nn as nn
 from torch.nn import CrossEntropyLoss, MSELoss
@@ -7,7 +7,7 @@ from transformers import BertModel
 from transformers.modeling_outputs import TokenClassifierOutput
 
 
-class CustomBERTModel(nn.Module):
+class LinearProbingBERTModel(nn.Module):
     """Custom model based on `BertForTokenClassification`.
         - Construct model from BertConfig.
 
@@ -22,6 +22,11 @@ class CustomBERTModel(nn.Module):
         self.config = config
         self.num_labels = config.num_labels
 
+        # Which layer is used to connect to output layer
+        if config.to_layer is None:
+            raise ValueError("Argument `to_layer` should be specified which BERT's layer the classifier is added on.")
+        self.to_layer = int(config.to_layer)
+        
         self.bert = BertModel.from_pretrained("bert-base-cased")
         self.dropout = nn.Dropout(config.hidden_dropout_prob)
         self.linear = nn.Linear(config.hidden_size, self.num_labels)
@@ -47,26 +52,25 @@ class CustomBERTModel(nn.Module):
 
         # BERT Output
         outputs = self.bert(
-            input_ids,
-            attention_mask=attention_mask,
-            token_type_ids=token_type_ids,
-            position_ids=position_ids,
-            head_mask=head_mask,
-            inputs_embeds=inputs_embeds,
-            output_attentions=output_attentions,
-            output_hidden_states=output_hidden_states,
-            return_dict=return_dict,
-        )
-        print(type(outputs.hidden_states))
-        print(type(outputs.attentions))
-
-        print(outputs.hidden_states)
-        print(outputs.attentions)
-
-
-        # sequence_output: (Batch_size, max_seq_len, dims)
-        sequence_output = outputs[0]
-        sequence_output = self.dropout(sequence_output)
+                    input_ids,
+                    attention_mask=attention_mask,
+                    token_type_ids=token_type_ids,
+                    position_ids=position_ids,
+                    head_mask=head_mask,
+                    inputs_embeds=inputs_embeds,
+                    output_attentions=output_attentions,
+                    output_hidden_states=True,
+                    return_dict=return_dict,
+                )
+        
+        ### `hidden_states` ###
+        # Tuple contains embedding and each layer
+        # ((batch_size, seq_len, dims), (ANOTHER_LAYER), ...)
+        # sequence_output: (batch_size, max_seq_len, dims)        
+        hiddens = outputs[2]
+        hidden = hiddens[self.to_layer]
+        
+        sequence_output = self.dropout(hiddens[self.to_layer])
         logits = self.linear(sequence_output)
 
         loss = None
@@ -88,9 +92,7 @@ class CustomBERTModel(nn.Module):
             return ((loss,) + output) if loss is not None else output
 
         return TokenClassifierOutput(loss=loss,
-                                     logits=logits,
-                                     hidden_states=outputs.hidden_states, # From BERT
-                                     attentions=outputs.attentions)
-
+                                     logits=logits,)
+                                     
 def model():
-    return CustomBERTModel
+    return LinearProbingBERTModel
