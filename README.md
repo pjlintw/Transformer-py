@@ -1,15 +1,14 @@
 # Transformer-py: a Flexible Framework for POS tagging.
 
-[**Data**](#dataset-and-preprocessing) | [**Training**](#run-the-model)
-
-
+[**Data**](#dataset-and-preprocessing) | [**Training**](#run-bert-variants-for-pos-tagging)
 
 The repository works on fine-tuning of the pre-trained Transformer-based models for Parts-of-speech (POS) tagging. We leverage `chtb_0223.gold_conll`, `phoenix_0001.gold_conll`, `pri_0016.gold_conll` and `wsj_1681.gold_conll` annotated file as dataset for fine-tuning. To reproduce the results, follow the steps bellow.
+
+In the literature, the intial layers is used to encode general, semantic-irrelevant information. The middle layers usually enabels to produce information-rich represenations. The latter layers are good at encoding the abstractive and task-orientic semantic representation. We develop a flixible framework to run such experiements. 
 
 * New Februray 22th, 2021: Data preprocessing and data information.
 * New March 8th, 2021: Train the BERT and custom model, dataset loading script.
     
-
 ## TO-DO
 * Experiements of Linear Probing.
 * Experiements of data efficiency.
@@ -116,7 +115,7 @@ export WANDB_PROJECT=TEST_PROJECT
 export WANDB_WATCH=all
 ```
 
-## Run the model
+## Run BERT variants for POS tagging
 
 We evaluate the BERT on linear probing test to see which layer capture more linsutic structure 
 information in therir contextual representaitons. The output layers for classifing the POS tags are added on the different layers of BERT. We only train these layer's weights.
@@ -130,7 +129,11 @@ We found that executing time of  64 minibatch size trained with maximal sequence
 The maximal sequence length, in OntoNotoes is 228, is usually an extrem case. We gains huge improvement on the runtime for an minibatch by using  using 63 to `max_seq_length` covering 99% of sequence length.
 
 
-### Train the model on top of BERT 
+### Train the offficail BERT model
+
+The official Huggingface BERT for sequence labeling task using `BertForTokenClassification` class. 
+The model levreages a pre-trained BERT, droput and an classifier layer.
+To run these settings, you can run
 
 ```python
 python run_pos.py \
@@ -139,15 +142,53 @@ python run_pos.py \
  --task_name pos \
  --dataset_script ontonotes_v4.py \
  --max_seq_length 63 \
- --per_device_train_batch_size 16 \
- --per_device_eval_batch_size 8 \
+ --per_device_train_batch_size 48 \
+ --per_device_eval_batch_size 48 \
  --num_train_epochs 3 \
  --do_train \
  --do_eval \
  --do_predict
+ --learning_rate 1e-2 
 ```
 
-### Train the custom model
+### Train Linear Probing BERT  
+
+Linear probing BERT is an architecture to extract the fixed contextual representations from the BERT.
+It aims to evalaute which layer captures linguistic structure information in their features.
+
+The custom model based `bert-base-cased`. Therefore, it has one embedding layer in 12 BERT layer in 
+BERT model. If you use a classifier on top of 12th BERT's layer. It is same as the standard BERT that 
+`BertForTokenClassification` class creats for you. 
+
+To train BERT model on linear probing setting, you have to specify `linear-probing-bert.py` to
+the option `--model_name_or_path` and pass integer indicating on which BERT's layer the classifier heads on.
+
+```python
+ python run_pos.py \
+ --model_name_or_path models/linear-probing-bert.py \
+ --output_dir /tmp/pos-exp-1 \
+ --task_name pos \
+ --dataset_script ontonotes_v4.py \
+ --max_seq_length 63 \
+ --per_device_train_batch_size 48 \
+ --per_device_eval_batch_size 48 \
+ --max_steps 120 \
+ --do_train \
+ --do_eval \
+ --do_predict \
+ --max_train_samples 10000 \
+ --max_val_samples 300 \
+ --max_test_samples 300 \
+ --logging_first_step \
+ --logging_steps 5 \
+ --learning_rate 1e-2 \
+ --evaluation_strategy steps \
+ --eval_steps 10 \
+ --to_layer 2 
+```
+
+
+### Train your custom model
 
 Run the costom model via the path `models/custom-model-demo.py`.
 You can define your custom model by modifing the demo script.
@@ -165,6 +206,7 @@ python run_pos.py \
  --do_train \
  --do_eval \
  --do_predict
+  --learning_rate 1e-2 \
 ```
 
 ### Quicker training  
@@ -190,4 +232,5 @@ python run_pos.py \
  --max_val_samples 1000 \
  --max_test_samples 1000 \
  --logging_steps 20 
+ --learning_rate 1e-2 \
 ```
