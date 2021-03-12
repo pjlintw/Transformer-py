@@ -52,6 +52,10 @@ cd data
 cat *.gold_conll >> sample.conll
 ```
 
+In the following steps, you will preprcesse the collected file `sample.conll`, then split them into `sample.train`, `sample.dev` and `sample.test`
+for building the datasets. You have to change the relative path to `--datasets_name` if you're using different file directory .
+
+
 ### Preprocessing and Dataset Splitting
 
 The file `sample.conll` contains irrelevant informations for training the neural nets.
@@ -61,7 +65,7 @@ We only need the sequence of observation, POS tags and the word position for the
 The arguments `--dataset_name` and `output_dir` are the file to be passed to the program and the repository for the output file respectively. 
 
 It generates `sample.tsv` for all examples and `sample.train`, `sample.dev` and `sample.test` for the network training.  The examples will be suffled in the scripts and split into `train`, `validation` and `test` files.  The arugements `--eval_samples` and `--test_samples`
-decide the number of samples will be selected from examples. In OntoNotes datasets, we select 67880 for training set, 2000 for validation and test sets respectively. To preprocesse and split the datasets, you need to run the code bellow. Make sure the datasets has larger number examples for splitting out develop and test set.
+decide the number of samples will be selected from examples. In OntoNotes datasets, we select 67880 for training set, 2000 for validation and test sets respectively. To preprocesse and split the datasets, you need to run the code bellow. 
 
 ```python
 python data_preprocess.py \
@@ -72,7 +76,19 @@ python data_preprocess.py \
 ```
 
 Or just run the bash script `source ./run_preprocess.sh` in the command line. The output file `sample.tsv` will under the 
-path `--output_dir`. 
+path `--output_dir`. You will get the result.
+
+```
+Loading 69880 examples
+Seed 49 is used to shuffle examples
+Saving 69880 examples to sample.tsv
+Saving 65880 examples to sample.train
+Saving 2000 examples to sample.dev
+Saving 2000 examples to sample.test
+```
+
+Make sure that **the datasets** you passed to the argument `--dataset_name` has larger number examples for splitting out develop and test set. The examples files may have no example, if the splitting number for eval and test sets is greater than the example in `sample.conll`.
+
 
 ### Data Information
 
@@ -92,9 +108,7 @@ or run `source ./run_information.sh` in the command line. The output file `sampl
 ### Train with Custom OntoNotes v4.0
 
 We use our dataset loading script `ontonotes_v4.py`for creating dataset. The script builds the train, validation and test sets from those 
-dataset splits obtained by the `data_preprocess.py` program. 
-Make sure the dataset split files `sample.train`, `sample.dev` , and `sample.test` are included in the datasets folder `/ontonotes-4.0/` your dataset folder.
-
+dataset splits obtained by the `data_preprocess.py` program. Make sure the dataset split files `sample.train`, `sample.dev` , and `sample.test` are included in the datasets folder `/ontonotes-4.0/` your dataset folder. 
 
 ## Save the Results
 
