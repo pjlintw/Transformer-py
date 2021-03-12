@@ -1,0 +1,85 @@
+(fabian-pinjie) linus@linpinjies-MBP transformer-py %  python run_pos.py \
+ --model_name_or_path models/linear-probing-bert.py \
+ --output_dir /tmp/pos-exp-1 \
+ --task_name pos \
+ --dataset_script ontonotes_v4.py \
+ --max_seq_length 63 \
+ --per_device_train_batch_size 48 \
+ --per_device_eval_batch_size 48 \
+ --max_steps 120 \
+ --do_train \
+ --do_eval \
+ --do_predict \
+ --max_train_samples 10000 \
+ --max_val_samples 300 \
+ --max_test_samples 300 \
+ --logging_first_step \
+ --logging_steps 5 \
+ --learning_rate 1e-2 \
+ --evaluation_strategy steps \
+ --eval_steps 10 \
+ --to_layer 6
+03/12/2021 00:22:34 - WARNING - datasets.builder -   Reusing dataset ontonotes4 (/Users/linus/.cache/huggingface/datasets/ontonotes4/ontonotes4/0.0.0/fe3b1d886449dd8016ef9f4c12917b1bd64f9515b0ea7b17482c2c844a16cc9b)
+Creating custom model in models/linear-probing-bert.py
+03/12/2021 00:22:47 - WARNING - datasets.arrow_dataset -   Loading cached processed dataset at /Users/linus/.cache/huggingface/datasets/ontonotes4/ontonotes4/0.0.0/fe3b1d886449dd8016ef9f4c12917b1bd64f9515b0ea7b17482c2c844a16cc9b/cache-911efc813c174f5c.arrow
+03/12/2021 00:22:47 - WARNING - datasets.arrow_dataset -   Loading cached processed dataset at /Users/linus/.cache/huggingface/datasets/ontonotes4/ontonotes4/0.0.0/fe3b1d886449dd8016ef9f4c12917b1bd64f9515b0ea7b17482c2c844a16cc9b/cache-4dfe332d71fa74d4.arrow
+03/12/2021 00:22:47 - WARNING - datasets.arrow_dataset -   Loading cached processed dataset at /Users/linus/.cache/huggingface/datasets/ontonotes4/ontonotes4/0.0.0/fe3b1d886449dd8016ef9f4c12917b1bd64f9515b0ea7b17482c2c844a16cc9b/cache-ee73a6652a3faffd.arrow
+huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+    - Avoid using `tokenizers` before the fork if possible
+    - Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+    - Avoid using `tokenizers` before the fork if possible
+    - Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+    - Avoid using `tokenizers` before the fork if possible
+    - Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+    - Avoid using `tokenizers` before the fork if possible
+    - Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+  0%|                                                                                             | 0/120 [00:00<?, ?it/s]/Users/linus/opt/anaconda3/envs/fabian-pinjie/lib/python3.8/site-packages/torch/nn/modules/module.py:795: UserWarning: Using a non-full backward hook when the forward contains multiple autograd Nodes is deprecated and will be removed in future versions. This hook will be missing some grad_input. Please use register_full_backward_hook to get the documented behavior.
+  warnings.warn("Using a non-full backward hook when the forward contains multiple autograd Nodes "
+{'loss': 3.9483, 'learning_rate': 0.009916666666666667, 'epoch': 0.0}                                                     
+{'loss': 1.3598, 'learning_rate': 0.009583333333333334, 'epoch': 0.02}                                                    
+{'loss': 0.4192, 'learning_rate': 0.009166666666666667, 'epoch': 0.05}                                                    
+{'eval_loss': 0.2689025402069092, 'eval_precision': 0.7776482120255631, 'eval_recall': 0.7741245083170373, 'eval_f1': 0.766684661468469, 'eval_accuracy': 0.9253176324759839, 'eval_runtime': 42.4145, 'eval_samples_per_second': 7.073, 'epoch': 0.05}
+{'loss': 0.2655, 'learning_rate': 0.00875, 'epoch': 0.07}                                                                 
+{'loss': 0.2129, 'learning_rate': 0.008333333333333333, 'epoch': 0.1}                                                     
+{'eval_loss': 0.19825106859207153, 'eval_precision': 0.8486879264054694, 'eval_recall': 0.844661264769216, 'eval_f1': 0.8315723853782719, 'eval_accuracy': 0.9449953517198636, 'eval_runtime': 40.4797, 'eval_samples_per_second': 7.411, 'epoch': 0.1}
+{'loss': 0.2504, 'learning_rate': 0.007916666666666666, 'epoch': 0.12}                                                    
+{'loss': 0.2287, 'learning_rate': 0.0075, 'epoch': 0.14}                                                                  
+{'eval_loss': 0.16579654812812805, 'eval_precision': 0.8680354498752191, 'eval_recall': 0.8614151962515493, 'eval_f1': 0.8536777758700786, 'eval_accuracy': 0.9546017973349861, 'eval_runtime': 40.6676, 'eval_samples_per_second': 7.377, 'epoch': 0.14}
+{'loss': 0.2147, 'learning_rate': 0.007083333333333334, 'epoch': 0.17}                                                    
+{'loss': 0.1949, 'learning_rate': 0.006666666666666666, 'epoch': 0.19}                                                    
+{'eval_loss': 0.15626636147499084, 'eval_precision': 0.9029003023456489, 'eval_recall': 0.905565527613318, 'eval_f1': 0.8903488446248744, 'eval_accuracy': 0.9547567400061977, 'eval_runtime': 40.9922, 'eval_samples_per_second': 7.318, 'epoch': 0.19}
+{'loss': 0.1916, 'learning_rate': 0.00625, 'epoch': 0.22}                                                                 
+{'loss': 0.2076, 'learning_rate': 0.005833333333333334, 'epoch': 0.24}                                                    
+{'eval_loss': 0.14204096794128418, 'eval_precision': 0.9184444190215528, 'eval_recall': 0.905058199227183, 'eval_f1': 0.9065575652753655, 'eval_accuracy': 0.9581654787728541, 'eval_runtime': 40.0129, 'eval_samples_per_second': 7.498, 'epoch': 0.24}
+{'loss': 0.2025, 'learning_rate': 0.005416666666666666, 'epoch': 0.26}                                                    
+{'loss': 0.1967, 'learning_rate': 0.005, 'epoch': 0.29}                                                                   
+{'eval_loss': 0.13073648512363434, 'eval_precision': 0.9435932576665479, 'eval_recall': 0.9351384189408621, 'eval_f1': 0.935840034545814, 'eval_accuracy': 0.9623489308955686, 'eval_runtime': 43.8347, 'eval_samples_per_second': 6.844, 'epoch': 0.29}
+{'loss': 0.1821, 'learning_rate': 0.004583333333333333, 'epoch': 0.31}                                                    
+{'loss': 0.1605, 'learning_rate': 0.004166666666666667, 'epoch': 0.33}                                                    
+{'eval_loss': 0.130239337682724, 'eval_precision': 0.945126994759167, 'eval_recall': 0.934261536362234, 'eval_f1': 0.9373062768134365, 'eval_accuracy': 0.9629687015804153, 'eval_runtime': 39.6564, 'eval_samples_per_second': 7.565, 'epoch': 0.33}
+{'loss': 0.1713, 'learning_rate': 0.00375, 'epoch': 0.36}                                                                 
+{'loss': 0.1694, 'learning_rate': 0.003333333333333333, 'epoch': 0.38}                                                    
+{'eval_loss': 0.1209428533911705, 'eval_precision': 0.9538498504908176, 'eval_recall': 0.9504359229589969, 'eval_f1': 0.9512393334380046, 'eval_accuracy': 0.9665323830182833, 'eval_runtime': 41.8706, 'eval_samples_per_second': 7.165, 'epoch': 0.38}
+{'loss': 0.146, 'learning_rate': 0.002916666666666667, 'epoch': 0.41}                                                     
+{'loss': 0.1466, 'learning_rate': 0.0025, 'epoch': 0.43}                                                                  
+{'eval_loss': 0.11670161038637161, 'eval_precision': 0.9562344186762582, 'eval_recall': 0.9574217212323103, 'eval_f1': 0.9558313220816237, 'eval_accuracy': 0.9660675550046482, 'eval_runtime': 43.1938, 'eval_samples_per_second': 6.945, 'epoch': 0.43}
+{'loss': 0.1676, 'learning_rate': 0.0020833333333333333, 'epoch': 0.45}                                                   
+{'loss': 0.1612, 'learning_rate': 0.0016666666666666666, 'epoch': 0.48}                                                   
+{'eval_loss': 0.11540912836790085, 'eval_precision': 0.9502432979446531, 'eval_recall': 0.946084636033899, 'eval_f1': 0.9473080613692144, 'eval_accuracy': 0.965757669662225, 'eval_runtime': 44.0594, 'eval_samples_per_second': 6.809, 'epoch': 0.48}
+{'loss': 0.1402, 'learning_rate': 0.00125, 'epoch': 0.5}                                                                  
+{'loss': 0.166, 'learning_rate': 0.0008333333333333333, 'epoch': 0.53}                                                    
+{'eval_loss': 0.11432948708534241, 'eval_precision': 0.9537222400040092, 'eval_recall': 0.9490070219652035, 'eval_f1': 0.9504676473327963, 'eval_accuracy': 0.9666873256894949, 'eval_runtime': 41.0672, 'eval_samples_per_second': 7.305, 'epoch': 0.53}
+{'loss': 0.1459, 'learning_rate': 0.00041666666666666664, 'epoch': 0.55}                                                  
+{'loss': 0.139, 'learning_rate': 0.0, 'epoch': 0.57}                                                                      
+{'eval_loss': 0.11382166296243668, 'eval_precision': 0.953796828322549, 'eval_recall': 0.9493829133542347, 'eval_f1': 0.9506843102197291, 'eval_accuracy': 0.9677719243879764, 'eval_runtime': 40.0463, 'eval_samples_per_second': 7.491, 'epoch': 0.57}
+{'train_runtime': 1328.105, 'train_samples_per_second': 0.09, 'epoch': 0.57}                                              
+100%|███████████████████████████████████████████████████████████████████████████████████| 120/120 [22:08<00:00, 11.07s/it]
+100%|███████████████████████████████████████████████████████████████████████████████████████| 7/7 [00:36<00:00,  5.19s/it]
+100%|███████████████████████████████████████████████████████████████████████████████████████| 7/7 [00:36<00:00,  4.83s/it]Test metrics {'eval_loss': 0.11382166296243668, 'eval_precision': 0.953796828322549, 'eval_recall': 0.9493829133542347, 'eval_f1': 0.9506843102197291, 'eval_accuracy': 0.9677719243879764, 'eval_runtime': 42.9726, 'eval_samples_per_second': 6.981}
