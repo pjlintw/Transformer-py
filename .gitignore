@@ -4,5 +4,6 @@ venv/
 __pycache__
 *.conll
 *.tsv
+*.lock
 ontonotes-4.0
 .*
