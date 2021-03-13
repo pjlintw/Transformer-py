@@ -6,3 +6,4 @@ __pycache__
 *.tsv
 ontonotes-4.0
 .*
+experiments/model-*

@@ -108,8 +108,8 @@ or run `source ./run_information.sh` in the command line. The output file `sampl
 ### Train with Custom OntoNotes v4.0
 
 We use our dataset loading script `ontonotes_v4.py`for creating dataset. The script builds the train, validation and test sets from those 
-dataset splits obtained by the `data_preprocess.py` program. Make sure the dataset split files `sample.train`, `sample.dev` , and `sample.test` are included in the datasets folder `/ontonotes-4.0/` your dataset folder. 
-
+dataset splits obtained by the `data_preprocess.py` program. 
+Make sure the dataset split files `sample.train`, `sample.dev` , and `sample.test` are included in the datasets folder `data/` your dataset folder.
 
 ## Save the Results
 
