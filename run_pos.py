@@ -201,6 +201,8 @@ def main():
             revision="main",
             use_auth_token=True if False else None,
         )
+
+
         # Freeze BERT. Train the `classifier` weights 
         for param in model.base_model.parameters():
             param.requires_grad = False
@@ -419,7 +421,7 @@ def main():
             checkpoint = None
         train_result = trainer.train(resume_from_checkpoint=checkpoint)
         metrics = train_result.metrics
-        trainer.save_model()  # Saves the tokenizer too for easy upload
+        trainer.save_model("./")  # Saves the tokenizer too for easy upload
 
         max_train_samples = (
             data_args.max_train_samples if data_args.max_train_samples is not None else len(train_dataset)
