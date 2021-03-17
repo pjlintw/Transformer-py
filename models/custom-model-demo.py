@@ -57,12 +57,6 @@ class CustomBERTModel(nn.Module):
             output_hidden_states=output_hidden_states,
             return_dict=return_dict,
         )
-        print(type(outputs.hidden_states))
-        print(type(outputs.attentions))
-
-        print(outputs.hidden_states)
-        print(outputs.attentions)
-
 
         # sequence_output: (Batch_size, max_seq_len, dims)
         sequence_output = outputs[0]

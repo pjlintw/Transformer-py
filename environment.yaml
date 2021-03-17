@@ -3,6 +3,11 @@ channels:
   - defaults
 dependencies:
   - python=3.8
-  - numpy
-  - datasets
-prefix: /Users/linus/opt/anaconda3/envs/fabian-pinjie
+  - pip
+  - pip:
+    - transformers==4.3.3
+    - datasets==1.4.1
+    - pytorch-lightning==1.2.3
+    - seqeval==1.2.2
+    - wandb==0.10.22
+

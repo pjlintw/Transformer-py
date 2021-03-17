@@ -31,6 +31,9 @@ class LinearProbingBERTModel(nn.Module):
         self.dropout = nn.Dropout(config.hidden_dropout_prob)
         self.linear = nn.Linear(config.hidden_size, self.num_labels)
 
+        print(config.hidden_dropout_prob)
+        print(config.hidden_size)
+
         # Freeze BERT
         for param in self.bert.parameters():
             param.requires_grad = False

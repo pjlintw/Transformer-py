@@ -131,7 +131,6 @@ def main():
     # Set seed before initializing
     set_seed(training_args.seed)
 
-
     ########## Load dataset from script. ##########
     # 'ontonotes_v4.py'
     datasets = load_dataset(data_args.dataset_script)
