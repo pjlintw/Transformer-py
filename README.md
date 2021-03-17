@@ -3,7 +3,7 @@
 [**Data**](#dataset-and-preprocessing) | [**Training**](#run-bert-variants-for-pos-tagging) | [**Linear-BERT**](**train-linear-bert)
 
 
-The repository works on fine-tuning of the pre-trained Transformer-based models for Parts-of-speech (POS) tagging. We leverage `chtb_0223.gold_conll`, `phoenix_0001.gold_conll`, `pri_0016.gold_conll` and `wsj_1681.gold_conll` annotated file as dataset for fine-tuning. To reproduce the results, follow the steps below.
+The repository works on fine-tuning of the pre-trained Transformer-based models for Parts-of-speech (POS) tagging. We leverage `chtb_0223.gold_conll`, `phoenix_0001.gold_conll`, `pri_0016.gold_conll` and `wsj_1681.gold_conll` annotated file as dataset example for fine-tuning. To reproduce the results, follow the steps below.
 
 In the literature, the initial layers are used to encode general, semantic-irrelevant information. The middle layers usually enable them to produce information-rich representations. The latter layers are good at encoding the abstractive and task-oriented semantic representation. We develop a flexible framework to run such experiments. 
 
@@ -184,7 +184,7 @@ python run_pos.py \
 Linear-BERT is the feature-based approach with BERT
 and an architecture to extract the fixed contextual representations from the BERT. It aims to evaluate which layer captures linguistic structure information among the different layers. We freeze BERT’s weights and only train the classifier.
 
-The custom model uses `bert-base-cased` as the base model follow by the dropout and linear classifier for labeling. You can specify the layer with the index from **0** to **13** to the argument `to_layer`. `0` indicates the embedding layer and the 12 BERT's layers are in the range of `1` to `13`. If you use a classifier on top of 12th BERT's layer, where you use `13` as the arugment. It is same as the standard BERT that `BertForTokenClassification` class creats for you. 
+The custom model uses `bert-base-cased` as the base model follow by the dropout and linear classifier for labeling. You can specify the layer with the index from **0** to **12** to the argument `to_layer`. `0` indicates the embedding layer and the 12 BERT's layers are in the range of `1` to `12`. If you use a classifier on top of 12th BERT's layer, where you use `12` as the arugment. It is same as the standard BERT that `BertForTokenClassification` class creats for you. 
 
 To train BERT model on linear probing setting, you have to specify `linear-probing-bert.py` to
 the option `--model_name_or_path` and pass integer indicating on which BERT's layer the classifier heads on.
