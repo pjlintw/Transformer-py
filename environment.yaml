@@ -1,9 +1,8 @@
 name: fabian-pinjie
-channels:
-  - defaults
+
 dependencies:
   - python=3.8
-  - pip
+  - pip==20.2.4
   - pip:
     - transformers==4.3.3
     - datasets==1.4.1
