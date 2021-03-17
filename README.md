@@ -1,6 +1,6 @@
 # Transformer-py: a Flexible Framework for POS tagging.
 
-[**Data**](#dataset-and-preprocessing) | [**Training**](#run-bert-variants-for-pos-tagging) | [**Linear-BERT**](**train-linear-bert)
+[**Data**](#dataset-and-preprocessing) | [**Training**](#run-bert-variants-for-pos-tagging) | [**Linear-BERT**](#train-linear-bert)
 
 
 The repository works on fine-tuning of the pre-trained Transformer-based models for Parts-of-speech (POS) tagging. We leverage `chtb_0223.gold_conll`, `phoenix_0001.gold_conll`, `pri_0016.gold_conll` and `wsj_1681.gold_conll` annotated file as dataset example for fine-tuning. To reproduce the results, follow the steps below.
