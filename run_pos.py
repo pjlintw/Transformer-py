@@ -29,7 +29,9 @@ from transformers import (
 )
 from transformers.trainer_utils import get_last_checkpoint, is_main_process
 
-
+# Set GPU
+os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
 # Setup logging
 logger = logging.getLogger(__name__)
@@ -279,7 +281,9 @@ def main():
         tokenized_inputs["labels"] = labels
         return tokenized_inputs
 
-
+    print(len(datasets["train"]))
+    print(len(datasets["validation"]))
+    print(len(datasets["test"]))
 
     ### Truncate  number of examples ###
     if training_args.do_train:
@@ -464,15 +468,4 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-
-
-
-
-
-
-
-
-
-
 

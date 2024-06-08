@@ -96,8 +96,8 @@ class Ontonotes4(datasets.GeneratorBasedBuilder):
         test_file ="./data/sample.test"
         return [
             datasets.SplitGenerator(name=datasets.Split.TRAIN, gen_kwargs={"filepath": train_file}),
-            datasets.SplitGenerator(name=datasets.Split.VALIDATION, gen_kwargs={"filepath": train_file}),
-            datasets.SplitGenerator(name=datasets.Split.TEST, gen_kwargs={"filepath": train_file}),
+            datasets.SplitGenerator(name=datasets.Split.VALIDATION, gen_kwargs={"filepath": dev_file}),
+            datasets.SplitGenerator(name=datasets.Split.TEST, gen_kwargs={"filepath": test_file}),
         ]
 
     def _generate_examples(self, filepath):
